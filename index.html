@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アレックスブライト 演出法則クイズ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap');
+
+        :root {
+            --primary-color: #007BFF;
+            --secondary-color: #6c757d;
+            --background-color: #f8f9fa;
+            --container-bg: #ffffff;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+            --success-color: #28a745;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .quiz-container {
+            background-color: var(--container-bg);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .quiz-header {
+            background-color: #333;
+            color: white;
+            padding: 2rem;
+        }
+
+        .quiz-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .quiz-header p {
+            margin: 10px 0 0;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .quiz-body {
+            padding: 2rem;
+        }
+
+        .quiz-main {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+        
+        .quiz-main h2 {
+            font-size: 1.3rem;
+            margin-top: 0;
+            border-left: 5px solid var(--primary-color);
+            padding-left: 10px;
+        }
+
+        .quiz-main .context, .quiz-main .question {
+            background-color: #f1f1f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .quiz-main strong {
+            font-weight: 700;
+        }
+
+        .answer-section {
+            display: none; /* Initially hidden */
+            text-align: left;
+            margin-top: 2rem;
+            background-color: #e9f5ff;
+            border: 1px solid #b3d7ff;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .answer-section h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .button-wrapper {
+            padding: 2rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'Noto Sans JP', sans-serif;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        #next-btn, #restart-btn {
+            background-color: var(--success-color);
+        }
+
+        #next-btn:hover, #restart-btn:hover {
+            background-color: #218838;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #quiz-counter {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: var(--secondary-color);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container" id="quiz">
+        <div class="quiz-header">
+            <div id="start-screen">
+                <h1>アレックスブライト<br>演出法則クイズ</h1>
+                <p>主要な演出法則をクイズ形式で確認しよう！</p>
+            </div>
+            <div id="end-screen" class="hidden">
+                <h1>クイズ終了！</h1>
+                <p>お疲れ様でした。これであなたも演出マスター！</p>
+            </div>
+        </div>
+
+        <div class="quiz-body">
+            <div id="quiz-content">
+                <div id="quiz-counter"></div>
+                <div class="quiz-main">
+                    <div class="context">
+                        <strong>状況:</strong>
+                        <p id="context-text"></p>
+                    </div>
+                    <div class="question">
+                        <strong>問題:</strong>
+                        <p id="question-text"></p>
+                    </div>
+                </div>
+                <div class="answer-section" id="answer-section">
+                    <h3 id="answer-title"></h3>
+                    <p id="answer-text"></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-wrapper">
+             <button id="start-btn">クイズを始める</button>
+             <button id="show-answer-btn" class="hidden">回答を見る</button>
+             <button id="next-btn" class="hidden">次の問題へ</button>
+             <button id="restart-btn" class="hidden">もう一度挑戦する</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                context: "遊技中に予告音が鳴り、左リールに赤7が停止しました。",
+                question: "この時、ブドウを狙うべきですか？また、この状況でハズレやリプレイの可能性はありますか？",
+                answerTitle: "回答: ブドウを狙うべき。ハズレ・リプレイはなし。",
+                answer: "<strong>狙うべきか？:</strong> はい、ブドウを狙うべきです。予告音が発生している場合のみブドウが成立する可能性があるため、ブドウのフォローが必要です。<br><br><strong>ハズレやリプレイの可能性？:</strong> いいえ、この状況でハズレやリプレイの可能性はありません。予告音が発生した場合は、ハズレとリプレイが否定され、小役以上（ブドウ、チェリー、3枚役、羽など）の成立が濃厚となります。もし小役が揃わなかった場合は、ボーナス確定です。"
+            },
+            {
+                context: "予告音が鳴っていない通常時に、左リールに羽が上段に平行テンパイしました（例: 左リールの上段に「羽」図柄が2つ並んだ状態）。",
+                question: "この時、あなたは右リールで何を狙うべきですか？また、この手順で何をフォローしていますか？",
+                answerTitle: "回答: アレックス図柄を狙い、3枚役をフォロー。",
+                answer: "<strong>狙うべき図柄:</strong> 右リールに<strong>アレックス図柄（鳥の絵柄）</strong>を目安に狙ってください。<br><br><strong>フォローする役:</strong> 上段または下段に羽が平行テンパイした場合、<strong>3枚役（羽・羽・アレックス揃い）</strong>が成立している可能性があるため、取りこぼしを防ぐために必ずフォローが必要です。この3枚役は非常に取りこぼしやすく、獲得枚数に影響するため注意が必要です。"
+            },
+            {
+                context: "遊技中にリールが停止し、上部パネルが3消灯しました。しかし、どの小役も揃いませんでした。",
+                question: "この状況でボーナス成立は確定していますか？",
+                answerTitle: "回答: はい、ボーナス成立が濃厚（確定）です。",
+                answer: "<strong>ボーナス成立の有無:</strong> はい、この状況ではボーナス成立が<strong>濃厚（確定）</strong>です。<br><br>3消灯まで進行し、小役が揃わなかった場合、ハズレの可能性はありません。3消灯は非常に高い期待度を示唆し（予告音あり時で41.0%）、小役が揃わなければボーナス確定となる重要な法則です。"
+            },
+            {
+                context: "BIGボーナス終了後、33ゲーム固定の専用モード「AREXZONE」（アレックスゾーン）に突入しました。このモード中に何の演出も発生しませんでした。",
+                question: "この時、小役を取りこぼさないように目押しをする必要がありますか？",
+                answerTitle: "回答: いいえ、目押しは不要です。",
+                answer: "<strong>目押しの必要性:</strong> いいえ、演出が何も発生しない場合は、小役を取りこぼさないための目押しは不要です。<br><br>AREXZONE中では、小役（チェリー、ブドウ、3枚役）や特殊役が成立した際には必ずパネルフラッシュやサイドLEDなどの予告演出が発生します。したがって、演出が発生しないゲームではレア役が成立する可能性がないため、適当打ちや変則打ちで遊技を楽しむことができます。"
+            }
+        ];
+
+        const quizContainer = document.getElementById('quiz');
+        const startScreen = document.getElementById('start-screen');
+        const endScreen = document.getElementById('end-screen');
+        const quizContent = document.getElementById('quiz-content');
+        
+        const startBtn = document.getElementById('start-btn');
+        const showAnswerBtn = document.getElementById('show-answer-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+
+        const quizCounterEl = document.getElementById('quiz-counter');
+        const contextTextEl = document.getElementById('context-text');
+        const questionTextEl = document.getElementById('question-text');
+        const answerSection = document.getElementById('answer-section');
+        const answerTitleEl = document.getElementById('answer-title');
+        const answerTextEl = document.getElementById('answer-text');
+
+        let currentQuiz = 0;
+
+        function loadQuiz() {
+            deselectAnswer();
+            const currentQuizData = quizData[currentQuiz];
+            
+            quizCounterEl.innerText = `クイズ ${currentQuiz + 1} / ${quizData.length}`;
+            contextTextEl.innerHTML = currentQuizData.context;
+            questionTextEl.innerHTML = currentQuizData.question;
+            answerTitleEl.innerText = currentQuizData.answerTitle;
+            answerTextEl.innerHTML = currentQuizData.answer;
+        }
+
+        function deselectAnswer() {
+            answerSection.style.display = 'none';
+        }
+
+        startBtn.addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            quizContent.classList.remove('hidden');
+            startBtn.classList.add('hidden');
+            showAnswerBtn.classList.remove('hidden');
+            loadQuiz();
+        });
+
+        showAnswerBtn.addEventListener('click', () => {
+            answerSection.style.display = 'block';
+            showAnswerBtn.classList.add('hidden');
+            nextBtn.classList.remove('hidden');
+        });
+
+        nextBtn.addEventListener('click', () => {
+            currentQuiz++;
+            if (currentQuiz < quizData.length) {
+                loadQuiz();
+                showAnswerBtn.classList.remove('hidden');
+                nextBtn.classList.add('hidden');
+            } else {
+                quizContent.classList.add('hidden');
+                endScreen.classList.remove('hidden');
+                nextBtn.classList.add('hidden');
+                restartBtn.classList.remove('hidden');
+            }
+        });
+
+        restartBtn.addEventListener('click', () => {
+            currentQuiz = 0;
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            restartBtn.classList.add('hidden');
+            startBtn.classList.remove('hidden');
+        });
+        
+        // Initial state
+        quizContent.classList.add('hidden');
+
+    </script>
+
+</body>
+</html>
